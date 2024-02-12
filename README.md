@@ -25,17 +25,21 @@ pipx install git+https://github.com/thkwag/target-mysql.git@main
 
 The available configuration options for `target-mysql` are:
 
-| Configuration Options   | Description                                | Default            |
-|-------------------------|--------------------------------------------|--------------------|
-| host                    | MySQL server's hostname or IP address      |                    |
-| port                    | Port where MySQL server is running         |                    |
-| user                    | MySQL username                             |                    |
-| password                | MySQL user's password                      |                    |
-| database                | MySQL database's name                      |                    |
-| table_name_pattern      | MySQL table name pattern                   | "${TABLE_NAME}"    |
-| lower_case_table_names  | Use lowercase for table names or not       | true               |
-| allow_column_alter      | Allow column alterations or not            | false              |
-| replace_null            | Replace null values with others or not     | false              |
+| Configuration Options   | Description                                              | Default            |
+|-------------------------|----------------------------------------------------------|--------------------|
+| host                    | MySQL server's hostname or IP address                    |                    |
+| port                    | Port where MySQL server is running                       |                    |
+| user                    | MySQL username                                           |                    |
+| password                | MySQL user's password                                    |                    |
+| database                | MySQL database's name                                    |                    |
+| table_name_pattern      | MySQL table name pattern                                 | "${TABLE_NAME}"    |
+| lower_case_table_names  | Use lowercase for table names or not                     | true               |
+| allow_column_alter      | Allow column alterations or not                          | false              |
+| replace_null            | Replace null values with others or not                   | false              |
+| ssl_ca                  | SSL certificate authority record                         |                    |
+| ssl_key                 | The SSL private key                                      |                    |
+| ssl_cert                | The SSL certifiate                                       |                    |
+| check_hostname          | If SSL is used, whether to enforce strict hostname match | false              |
 
 Configurations can be stored in a JSON configuration file and specified using the `--config` flag with `target-mysql`.
 
