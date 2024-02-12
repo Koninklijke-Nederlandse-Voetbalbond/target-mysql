@@ -92,14 +92,15 @@ class MySQLConnector(SQLConnector):
                 key_file.write(self.config["ssl_key"].encode('utf-8'))
 
             ssl_arg = {
-                "ca": "./ca.pem",
-                "cert": "./cert.pem",
-                "key": "./key.pem",
+                "ssl_ca": "./ca.pem",
+                "ssl_cert": "./cert.pem",
+                "ssl_key": "./key.pem",
                 "check_hostname": self.config.get("check_hostname", "false")
             }
         else:
             ssl_arg = dict()
-        return sqlalchemy.create_engine(self.sqlalchemy_url, echo=False, connect_args=ssl_arg)
+        self.logger.info(self.sqlalchemy_url)
+        return sqlalchemy.create_engine(self.sqlalchemy_url, echo=False, connect_args={"ssl": ssl_arg})
 
     def get_fully_qualified_name(
             self,
