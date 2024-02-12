@@ -62,15 +62,24 @@ class TargetMySQL(SQLTarget):
             description="MySQL database",
         ),
         th.Property(
-            "table_name_pattern",
+            "ssl_ca",
             th.StringType,
-            description="MySQL table name pattern",
-            default="${TABLE_NAME}"
+            description="SSL Certificate Authority record",
         ),
         th.Property(
-            "lower_case_table_names",
+            "ssl_cert",
+            th.StringType,
+            description="SSL intermediate certificate",
+        ),
+        th.Property(
+            "ssl_key",
+            th.StringType,
+            description="SSL key",
+        ),
+        th.Property(
+            "check_hostname",
             th.BooleanType,
-            description="Lower case table names",
+            description="Whether to strictly check hostname on SSL certificate",
             default=True
         ),
         th.Property(
@@ -102,24 +111,16 @@ class TargetMySQL(SQLTarget):
                     for key, value in data.get('record', {}).items():
                         if value is not None:
                             continue
-
-                        # https://json-schema.org/understanding-json-schema/reference/type.html
-                        _type = self.schema_properties[key]['type']
-                        data_types = _type if isinstance(_type, list) else [_type]
-
-                        if "null" in data_types:
-                            continue
-                        if "string" in data_types:
+                        data_type = self.schema_properties[key]['type']
+                        print(key, value, data_type)
+                        if data_type == "string":
                             data['record'][key] = ""
-                        elif "object" in data_types:
+                        elif data_type == "object":
                             data['record'][key] = {}
-                        elif "array" in data_types:
+                        elif data_type == "array":
                             data['record'][key] = []
-                        elif "boolean" in data_types:
-                            data['record'][key] = False
                         else:
                             data['record'][key] = 0
-
                 processed_input.write(json.dumps(data) + '\n')
             processed_input.seek(0)
             return super()._process_lines(processed_input)

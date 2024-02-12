@@ -10,6 +10,7 @@ import typing as t
 from typing import Any, Dict, Iterable, List, Optional, cast
 
 import sqlalchemy
+
 from singer_sdk.connectors import SQLConnector
 from singer_sdk.helpers._conformers import replace_leading_digit
 from singer_sdk.helpers._typing import get_datelike_property_type
@@ -62,6 +63,45 @@ class MySQLConnector(SQLConnector):
             database=config["database"],
         )
 
+    def create_engine(self) -> Engine:
+        """Creates and returns a new engine. Do not call outside of _engine.
+
+        NOTE: Do not call this method. The only place that this method should
+        be called is inside the self._engine method. If you'd like to access
+        the engine on a connector, use self._engine.
+
+        This method exists solely so that tap/target developers can override it
+        on their subclass of SQLConnector to perform custom engine creation
+        logic.
+
+        Returns:
+            A new SQLAlchemy Engine.
+        """
+
+        # Attempt self-signed SSL if config vars are present
+        use_self_signed_ssl = self.config.get("ssl_ca") and self.config.get("ssl_cert") and self.config.get("ssl_key")
+        if use_self_signed_ssl:
+            self.logger.info("Creating SSL connection")
+            with open("ca.pem", "wb") as ca_file:
+                ca_file.write(self.config["ssl_ca"].encode('utf-8'))
+
+            with open("cert.pem", "wb") as cert_file:
+                cert_file.write(self.config["ssl_cert"].encode('utf-8'))
+
+            with open("key.pem", "wb") as key_file:
+                key_file.write(self.config["ssl_key"].encode('utf-8'))
+
+            ssl_arg = {
+                "ssl_ca": "./ca.pem",
+                "ssl_cert": "./cert.pem",
+                "ssl_key": "./key.pem",
+                "check_hostname": self.config.get("check_hostname", "false")
+            }
+        else:
+            ssl_arg = dict()
+        self.logger.info(self.sqlalchemy_url)
+        return sqlalchemy.create_engine(self.sqlalchemy_url, echo=False, connect_args={"ssl": ssl_arg})
+
     def get_fully_qualified_name(
             self,
             table_name: str | None = None,
@@ -83,16 +123,15 @@ class MySQLConnector(SQLConnector):
         Returns:
             The fully qualified name as a string.
         """
-        table_name_pattern = self.config.get("table_name_pattern")
+        table_name_pattern = self.config.get("table_name_pattern") or self.table_name_pattern
         table_name_pattern = string.Template(table_name_pattern).substitute({"TABLE_NAME": table_name})
         if table_name_pattern == "" or table_name_pattern is None:
             table_name_pattern = table_name
 
         parts = []
-        if db_name:
-            parts.append(db_name)
+        # NOTE: As this is a target, we need to write to the provided MySQL database (schema), NOT the source schema
         if schema_name:
-            parts.append(schema_name)
+            parts.append(self.config["database"])
         if table_name:
             parts.append(table_name_pattern)
 
