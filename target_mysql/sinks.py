@@ -533,6 +533,9 @@ class MySQLSink(SQLSink):
     soft_delete_column_name = "x_sdc_deleted_at"
     version_column_name = "x_sdc_table_version"
 
+    @property
+    def schema_name(self) -> None:
+        return None
     # @property
     # def schema_name(self) -> Optional[str]:
     #     """Return the schema name or `None` if using names with no schema part.
