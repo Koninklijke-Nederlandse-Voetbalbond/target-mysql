@@ -99,8 +99,12 @@ class MySQLConnector(SQLConnector):
             }
         else:
             ssl_arg = dict()
-        self.logger.info(self.sqlalchemy_url)
-        return sqlalchemy.create_engine(self.sqlalchemy_url, echo=False, connect_args={"ssl": ssl_arg})
+        try:
+            engine = sqlalchemy.create_engine(self.sqlalchemy_url, echo=False, connect_args={"ssl": ssl_arg})
+            return engine
+        except Exception:
+            self.logger.error("Error creating engine!")
+            raise Exception
 
     def get_fully_qualified_name(
             self,
