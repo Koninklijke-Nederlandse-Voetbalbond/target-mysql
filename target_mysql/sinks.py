@@ -55,7 +55,7 @@ class MySQLConnector(SQLConnector):
             return config["sqlalchemy_url"]
 
         return sqlalchemy.engine.url.URL.create(
-            drivername="mysql",
+            drivername="mysql+pymysql",
             username=config["user"],
             password=config["password"],
             host=config["host"],
